@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "customer_email": "jordan.lee@acme-corp.com",
+    "message": "I was just charged twice for my Pro subscription this month — $49 came out twice from my card on the same day. Can someone refund the duplicate charge? This is affecting my business account balance.",
+    "label": { "urgency": "high", "topic": "billing", "team": "billing_support" }
+  },
+  {
+    "id": 2,
+    "customer_email": "alex.kim@stark-industries.com",
+    "message": "Love the new dashboard redesign! Any chance you're planning to add a dark mode option in a future release? Not urgent, just curious.",
+    "label": { "urgency": "low", "topic": "feature_request", "team": "engineering" }
+  },
+  {
+    "id": 3,
+    "customer_email": "maria.chen@globex.io",
+    "message": "Your entire platform has been down for the last 20 minutes — none of my team can log in and we have a client demo in an hour. Please escalate immediately.",
+    "label": { "urgency": "critical", "topic": "outage", "team": "engineering" }
+  },
+  {
+    "id": 4,
+    "customer_email": "priya.nair@initech.co",
+    "message": "When I export a report to CSV, the date column shows the wrong format (MM/DD instead of DD/MM like the rest of my account settings). Not blocking, but annoying.",
+    "label": { "urgency": "normal", "topic": "bug", "team": "engineering" }
+  },
+  {
+    "id": 5,
+    "customer_email": "devon.reyes@umbrella.dev",
+    "message": "Could you point me to documentation on how to set up SSO for our organization? We're evaluating rolling it out next quarter.",
+    "label": { "urgency": "normal", "topic": "how_to", "team": "customer_success" }
+  },
+  {
+    "id": 6,
+    "customer_email": "jordan.lee@acme-corp.com",
+    "message": "I'm locked out of my account after too many failed login attempts and I have a board meeting in 30 minutes where I need to pull up our analytics. Please help urgently.",
+    "label": { "urgency": "high", "topic": "account_access", "team": "customer_success" }
+  },
+  {
+    "id": 7,
+    "customer_email": "sam.okafor@brightpath.com",
+    "message": "I just got an email that looks like it's from your company asking me to 'reverify my payment info' with a link to a site that isn't your domain. I think someone is phishing your customers using your branding.",
+    "label": { "urgency": "critical", "topic": "security", "team": "security_team" }
+  },
+  {
+    "id": 8,
+    "customer_email": "priya.nair@initech.co",
+    "message": "Our Zapier integration stopped firing webhooks for new orders sometime yesterday. It was working fine last week. Can someone check if anything changed on your end?",
+    "label": { "urgency": "normal", "topic": "integration", "team": "engineering" }
+  },
+  {
+    "id": 9,
+    "customer_email": "prospect.lead@newcorp-eval.com",
+    "message": "We're a team of 40 evaluating your Enterprise plan. Can someone walk us through pricing and whether you offer annual billing discounts?",
+    "label": { "urgency": "normal", "topic": "sales", "team": "sales_team" }
+  },
+  {
+    "id": 10,
+    "customer_email": "taylor.singh@wayneenterprises.com",
+    "message": "Just wanted to say your support team has been fantastic this year — no issue, just a thank you!",
+    "label": { "urgency": "low", "topic": "other", "team": "customer_success" }
+  },
+  {
+    "id": 11,
+    "customer_email": "jordan.lee@acme-corp.com",
+    "message": "Can you send me an itemized invoice for last month? I need it for our expense reporting and the one in the portal doesn't break down the add-ons separately.",
+    "label": { "urgency": "normal", "topic": "billing", "team": "billing_support" }
+  },
+  {
+    "id": 12,
+    "customer_email": "jamie.osei@hooli.com",
+    "message": "The app crashes every single time I try to save a form with more than 10 line items. I've lost work twice today because of this and there's no workaround I can find.",
+    "label": { "urgency": "high", "topic": "bug", "team": "engineering" }
+  },
+  {
+    "id": 13,
+    "customer_email": "maria.chen@globex.io",
+    "message": "I need to reset my password but the reset email never arrives, even after 3 tries and checking spam. I have a client presentation tomorrow morning and need access tonight.",
+    "label": { "urgency": "high", "topic": "account_access", "team": "customer_success" }
+  },
+  {
+    "id": 14,
+    "customer_email": "alex.kim@stark-industries.com",
+    "message": "Is there a keyboard shortcut to duplicate a row in the spreadsheet view? Just trying to speed up my workflow, no rush.",
+    "label": { "urgency": "low", "topic": "how_to", "team": "customer_success" }
+  },
+  {
+    "id": 15,
+    "customer_email": "priya.nair@initech.co",
+    "message": "Our finance team needs a CSV export of the monthly billing summary for our audit next week — right now I can only see it on-screen. Could this be prioritized? It's blocking our audit prep.",
+    "label": { "urgency": "normal", "topic": "feature_request", "team": "engineering" }
+  },
+  {
+    "id": 16,
+    "customer_email": "taylor.singh@wayneenterprises.com",
+    "message": "One of our employees clicked a suspicious link and their account showed a login from an unfamiliar country an hour later. We haven't confirmed a breach yet but wanted to flag it immediately.",
+    "label": { "urgency": "high", "topic": "security", "team": "security_team" }
+  },
+  {
+    "id": 17,
+    "customer_email": "devon.reyes@umbrella.dev",
+    "message": "The reporting dashboard has been throwing a 500 error for about 15 minutes for our whole team, but the rest of the app seems to work fine.",
+    "label": { "urgency": "high", "topic": "outage", "team": "engineering" }
+  },
+  {
+    "id": 18,
+    "customer_email": "maria.chen@globex.io",
+    "message": "Our production order-sync integration has been completely broken since this morning — no orders are flowing from your platform into our warehouse system, and we're now shipping blind. This is costing us real money every hour.",
+    "label": { "urgency": "critical", "topic": "integration", "team": "engineering" }
+  },
+  {
+    "id": 19,
+    "customer_email": "sam.okafor@brightpath.com",
+    "message": "I upgraded to the Pro plan last week but I'm still seeing the free-tier usage limits in my account. Did the upgrade not go through?",
+    "label": { "urgency": "normal", "topic": "billing", "team": "billing_support" }
+  },
+  {
+    "id": 20,
+    "customer_email": "unknown.user@somewhere.test",
+    "message": "It's not working. Please help.",
+    "label": { "urgency": "normal", "topic": "other", "team": "customer_success" }
+  }
+]

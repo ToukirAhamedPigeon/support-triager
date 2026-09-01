@@ -1,0 +1,28 @@
+{
+  "name": "support-triager",
+  "version": "1.0.0",
+  "description": "MCP-connected support triager built on the Anthropic Messages API",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "triage:one": "tsx src/cli/triageOne.ts",
+    "triage:eval": "tsx src/cli/runEval.ts",
+    "tokens:measure": "tsx src/cli/measureTokens.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
+    "dotenv": "^17.4.2",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}
