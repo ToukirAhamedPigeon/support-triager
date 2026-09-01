@@ -8,8 +8,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "triage:one": "tsx src/cli/triageOne.ts",
+    "triage:stream": "tsx src/cli/triageStreamDemo.ts",
     "triage:eval": "tsx src/cli/runEval.ts",
-    "tokens:measure": "tsx src/cli/measureTokens.ts"
+    "tokens:diff": "tsx src/cli/diffTokens.ts"
   },
   "keywords": [],
   "author": "",
