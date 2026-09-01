@@ -1,12 +1,12 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 /**
- * All four tools key off `customer_email` directly (not a chained customer_id),
- * so lookup_customer / fetch_recent_orders / fetch_recent_tickets have no
- * dependency on each other's output — this is what makes them safe to call
- * in parallel in a single turn (Step 6).
+ * All four custom tools key off `customer_email` directly (not a chained
+ * customer_id), so lookup_customer / fetch_recent_orders / fetch_recent_tickets
+ * have no dependency on each other's output — this is what makes them safe to
+ * call in parallel in a single turn (Step 6).
  */
-export const TOOLS: Anthropic.Tool[] = [
+export const TOOLS: Anthropic.ToolUnion[] = [
   {
     name: "lookup_customer",
     description:
@@ -57,5 +57,13 @@ export const TOOLS: Anthropic.Tool[] = [
       },
       required: ["customer_email", "subject", "priority", "team"],
     },
+  },
+  // Step 9: built-in server tool, resolved entirely on Anthropic's infrastructure —
+  // no client-side execution needed, so it doesn't touch executeTool() or the
+  // tool-use loop in engine.ts. See docs/server-tool.md for what it's for.
+  {
+    type: "web_search_20260209",
+    name: "web_search",
+    max_uses: 1,
   },
 ];
