@@ -10,7 +10,8 @@
     "triage:one": "tsx src/cli/triageOne.ts",
     "triage:stream": "tsx src/cli/triageStreamDemo.ts",
     "triage:eval": "tsx src/cli/runEval.ts",
-    "tokens:diff": "tsx src/cli/diffTokens.ts"
+    "tokens:diff": "tsx src/cli/diffTokens.ts",
+    "mcp:demo": "tsx src/cli/mcpDemo.ts"
   },
   "keywords": [],
   "author": "",
