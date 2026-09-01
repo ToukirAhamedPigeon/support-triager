@@ -11,13 +11,15 @@
     "triage:stream": "tsx src/cli/triageStreamDemo.ts",
     "triage:eval": "tsx src/cli/runEval.ts",
     "tokens:diff": "tsx src/cli/diffTokens.ts",
-    "mcp:demo": "tsx src/cli/mcpDemo.ts"
+    "mcp:demo": "tsx src/cli/mcpDemo.ts",
+    "kb:demo": "tsx src/cli/kbServerDemo.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "dotenv": "^17.4.2",
     "zod": "^4.5.4"
   },
