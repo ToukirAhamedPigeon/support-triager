@@ -13,6 +13,10 @@ Both are cases where an LLM's training data is a poor substitute for a live look
 
 It's explicitly capped at `max_uses: 1` and the prompt tells the model not to use it for the other eight topics (billing, bug, account_access, outage, integration, feature_request, sales, other) — none of those benefit from a live web lookup, so leaving it unrestricted would just add latency and token cost with no accuracy or usefulness gain.
 
+## Confirmed live
+
+Verified against the phishing/security eval message (#7): Claude called `web_search` alongside the custom tools in the first turn (`server_tool_use` block), and the result (`web_search_tool_result`) arrived in the very next turn without any client-side handling — exactly the "no execution loop" behavior the design relies on, confirmed rather than assumed.
+
 ## Integration cost: none
 
 Server tools resolve entirely on Anthropic's infrastructure — the call and its result both arrive as content blocks (`server_tool_use` / `web_search_tool_result`) within the same turn, not as a `tool_use` stop the client has to answer. Because `engine.ts`'s loop only reacts to blocks of type `tool_use` (the four custom tools), adding web search required zero changes to the tool-execution loop in `engine.ts` or `engineStream.ts` — only the tool declaration and the system-prompt guidance above.

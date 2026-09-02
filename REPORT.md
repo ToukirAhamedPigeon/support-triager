@@ -2,113 +2,139 @@
 
 **Repo:** https://github.com/ToukirAhamedPigeon/support-triager
 
-This report covers all 12 steps. Sections are labeled to match the required submission items (a)–(h). **Live-execution status:** Steps 1–11 are fully implemented, typechecked, and tested wherever they don't require live Anthropic API credits (mocked-client tests for the tool-use engines, a real subprocess test for the custom MCP server). Everything that needs a real Anthropic API call (Steps 1, 5–10 live runs, 12) is blocked on account credits — see "Live execution status" at the end.
+This report covers all 12 steps. Sections are labeled to match the required submission items (a)–(h). **Every step below was run live against the real Anthropic Messages API** — no results here are simulated or mocked; the mocked-client tests referenced alongside some steps are separate, deterministic engineering tests, not stand-ins for live proof.
 
 ---
 
 ## Step 1: API access
 
-Confirmed working end-to-end (`src/cli/testApiAccess.ts`) after resolving two real setup issues along the way: this account's API key is workspace-scoped, so requests need an explicit `anthropic-workspace-id` header (`src/lib/client.ts` sets it from `ANTHROPIC_WORKSPACE_ID`); and the account's "Evaluation access" plan has $0 credit by default (no card-free trial was actually granted) — confirmed via a real `401`/`400` credit-balance error, not assumed. Every script in this repo (`src/lib/client.ts`) is ready to run the instant credits are added; see "Live execution status."
+Confirmed working end-to-end (`src/cli/testApiAccess.ts`):
+
+```
+Model: claude-haiku-4-5-20251001
+Stop reason: end_turn
+Text: API access confirmed.
+Usage: { input_tokens: 17, output_tokens: 7, ... }
+```
+
+Getting here required resolving two real issues along the way, not just entering a key: this account's API key is workspace-scoped, so requests need an explicit `anthropic-workspace-id` header (`src/lib/client.ts`); and the account's "Evaluation access" plan turned out to have $0 credit by default — confirmed via a real `credit balance too low` error before the account was funded.
 
 ---
 
 ## (a) Step 2: Evaluation set
 
-Full data: [`docs/eval-set.json`](docs/eval-set.json), methodology: [`docs/eval-set.md`](docs/eval-set.md).
-
-20 hand-written, hand-labeled support messages (urgency/topic/team, labeled *before* any triager code existed), covering all 10 topics and all 5 teams, realistic urgency spread (3 critical / 6 high / 8 normal / 3 low), each carrying a `customer_email` tied to one of 8 mock customer accounts (`src/data/customers.ts`) so the tool-use tests have real data to act on. Two deliberately hard cases (#19, #20) are called out for later error analysis.
+Full data: [`docs/eval-set.json`](docs/eval-set.json), methodology: [`docs/eval-set.md`](docs/eval-set.md). 20 hand-written, hand-labeled messages (urgency/topic/team, labeled before any triager code existed), covering all 10 topics and all 5 teams.
 
 ---
 
 ## (b) Step 3: Triage schema
 
-Full spec: [`docs/schema.md`](docs/schema.md), implementation: `src/triager/schema.ts` (system prompt) + `src/triager/types.ts`/`schema.ts` (zod validation).
+Full spec: [`docs/schema.md`](docs/schema.md). Fixed JSON contract (`urgency`, `topic`, `team`, `confidence`, `needs_human_review`, `summary`) with an explicit uncertainty rule: never blank/invented values, pick the most likely topic/team, honest low confidence, `needs_human_review: true`, default `urgency: normal` rather than guessing high.
 
-```json
-{
-  "urgency": "critical | high | normal | low",
-  "topic": "billing | bug | account_access | how_to | feature_request | outage | security | integration | sales | other",
-  "team": "billing_support | engineering | customer_success | security_team | sales_team",
-  "confidence": 0.0,
-  "needs_human_review": false,
-  "summary": "one sentence"
-}
-```
-
-Uncertainty rule: never leave a field blank or invent a value outside the enums — pick the single most likely topic/team, set confidence honestly low, set `needs_human_review: true`, and default `urgency` to `normal` rather than guessing `critical` (a false-critical wastes a human's time on nothing, worse than a missed one a human catches on review).
+**A real edge case this rule had to handle live:** on the deliberately vague message #20 ("It's not working. Please help."), Claude sometimes asked a clarifying question in prose instead of forcing the JSON contract — see Step 8/12 below for how the engine now handles that.
 
 ---
 
 ## (c) Step 4: Model tier selection
 
-Full justification: [`docs/model-selection.md`](docs/model-selection.md).
-
-- **Stage 1 (high-volume classification): Claude Haiku 4.5.** Bounded task (closed enums, fixed tool signatures) — extra reasoning depth is wasted; this is the path every message takes and a human watches stream live, so latency matters most here; and it's the path that dominates total spend at volume, which is what makes Step 8's token optimization worth doing.
-- **Stage 2 (complex/sensitive escalation — used for the GitHub/Slack action step, Step 10): Claude Sonnet 5.** Only messages flagged critical/security/low-confidence reach this stage — synthesizing multiple tool results into a judgment call and drafting human-facing output is exactly where stronger reasoning earns its higher cost, on a minority of traffic.
+Full justification: [`docs/model-selection.md`](docs/model-selection.md). Stage 1 (all traffic): Haiku 4.5 — bounded classification task, latency-sensitive, volume-dominant cost. Stage 2 (critical/security/low-confidence escalation, used for the Step 10 GitHub/Slack action): Sonnet 5 — stronger judgment where it's actually needed, on a minority of traffic.
 
 ---
 
 ## (d) Step 5 & 6: Core triager + parallel tool use
 
-Implementation: `src/tools/definitions.ts` (4 custom tools + Step 9's web_search), `src/tools/executors.ts`, `src/triager/engine.ts`.
+Live run, message #1 (billing double-charge):
 
-All four custom tools (`lookup_customer`, `fetch_recent_orders`, `fetch_recent_tickets`, `create_ticket`) key off `customer_email` directly rather than a chained `customer_id`, specifically so the first three have no dependency on each other's output — which is what makes them safe for Claude to call together in one turn. `engine.ts`'s loop executes every `tool_use` block from a turn concurrently (`Promise.all`) and returns **all** results in a single `tool_result` user message, per the API's rule that splitting them across messages trains the model to stop batching.
+```
+Tool calls made:
+  - lookup_customer({"email":"jordan.lee@acme-corp.com"})
+  - fetch_recent_orders({"email":"jordan.lee@acme-corp.com"})
+  - fetch_recent_tickets({"email":"jordan.lee@acme-corp.com"})
+  - create_ticket({...})
+Turns: 3  Input tokens: 11402  Output tokens: 497
+Result:  {"urgency":"high","topic":"billing","team":"billing_support", ...}
+Ground truth: {"urgency":"high","topic":"billing","team":"billing_support"}
+```
 
-**Verified without live API calls**, via a scripted fake `Anthropic` client (`tests/engine.test.ts`) that returns pre-scripted multi-tool-use responses and asserts: both parallel tool calls land in one user message with the right `tool_use_id`s, a failed tool call is returned as `is_error: true` rather than dropped, and the final JSON parses against the schema. (Building this test caught a real bug in my *test* code — snapshotting a mutable shared array by reference instead of at call-time — not in `engine.ts`; worth noting since it's exactly the kind of mistake that looks like an engine bug until you check which side actually owns the mutation.)
+The first three tool calls all land in **one turn**, confirming Step 6's parallel behavior live (they share no dependency — each keys off `customer_email` directly, per `src/tools/definitions.ts`), and the result exactly matches ground truth. Also caught live: a real API validation error the first time this ran (`web_search` needs `allowed_callers: ["direct"]` explicitly for Haiku, which doesn't support programmatic tool calling) — fixed in `src/tools/definitions.ts` rather than worked around.
+
+Separately verified deterministically via a scripted fake client (`tests/engine.test.ts`): multiple `tool_use` blocks from one turn are always answered in a single `tool_result` message (never split), and a failed tool call returns `is_error: true` instead of being dropped.
 
 ---
 
 ## (e) Step 7: Streaming
 
-Implementation: `src/triager/engineStream.ts`, using the documented `client.messages.stream()` + `finalMessage()` manual-loop pattern (not reimplementing event aggregation by hand).
-
-**Verified without live API calls** (`tests/engineStream.test.ts`): a fake `MessageStream` fires scripted text deltas through `.on("text", ...)` before resolving `finalMessage()`; the test asserts the deltas received via the streaming callback, concatenated, equal exactly the text the final parsed JSON result came from — i.e. parsing genuinely works against the incremental event path, not just the finished payload.
+Live run, message #3 (critical outage) — text streamed token-by-token as it generated (reasoning prose during tool-use turns, then clean JSON on the final turn), and the parsed result matched ground truth exactly (`critical`/`outage`/`engineering`). Deterministic confirmation that streamed deltas reconstruct the exact same text the parsed result comes from: `tests/engineStream.test.ts`.
 
 ---
 
 ## (e) Step 9: Built-in server tool
 
-Full writeup: [`docs/server-tool.md`](docs/server-tool.md).
-
-Enabled **web search** (`web_search_20260209`), scoped by the system prompt to exactly two topics: `security` (check whether a reported attack matches a known phishing pattern, for the security team's context) and `how_to` (find the specific doc page to link, instead of the agent searching manually). Server tools resolve fully on Anthropic's infrastructure — no `tool_use` pause, so enabling it required zero changes to the tool-execution loop. Memory and Bash were considered and rejected (no stateful cross-session need in a 20-message batch eval; no filesystem/shell task in this workflow) — web search was the only one mapping onto a concrete, explainable improvement in what ends up on the ticket.
+Full writeup: [`docs/server-tool.md`](docs/server-tool.md). **Web search**, scoped to `security`/`how_to` topics only. Confirmed live on the phishing-report message (#7): Claude called it alongside the custom tools (`server_tool_use` block in turn 1), and the result (`web_search_tool_result`) arrived automatically in turn 2 with zero client-side handling — the "no execution loop" design confirmed, not assumed.
 
 ---
 
 ## (f) Step 10: GitHub + Slack MCP connections
 
-Full setup notes: [`docs/mcp-setup.md`](docs/mcp-setup.md), implementation: `src/mcp/servers.ts` + `src/mcp/act.ts`.
+Full details: [`docs/mcp-setup.md`](docs/mcp-setup.md). **GitHub: confirmed live end-to-end** — `npm run mcp:demo 18` (critical production-integration outage) triaged the message, then searched existing GitHub issues (none found) and created a real one: **[support-triager#1](https://github.com/ToukirAhamedPigeon/support-triager/issues/1)** — title, labels, and body (customer message + triage summary) all written by Claude through the GitHub MCP connection.
 
-Both connected via the Messages API's **native remote-MCP connector** (`mcp_servers` + `mcp_toolset` tools, beta `mcp-client-2025-11-20`) — both GitHub (`api.githubcopilot.com/mcp/`) and Slack (`mcp.slack.com/mcp`) publish official hosted endpoints, so this is server-resolved the same way as Step 9's web search, not a locally-run process. GitHub auth reuses the already-authenticated `gh` CLI token; Slack needs a one-time Slack App + OAuth setup in the account holder's workspace (documented, in progress — see status below).
+![Live GitHub issue filed through the MCP connection](screenshots/github-issue-live.png)
 
-`src/mcp/act.ts`'s `fileAndNotify()` takes a completed triage result and: searches the target GitHub repo for an existing matching issue before filing a new one (avoiding duplicates), and posts one routing notification to the Slack channel mapped from the ticket's team. `npm run mcp:demo` runs this against eval message #18 (the critical production-integration outage) by default.
+Claude also made a real small mistake mid-run (an accidental placeholder comment) and self-corrected transparently in a follow-up comment — left in as an honest example rather than re-run for a cleaner take.
+
+**Slack: correctly deferred, not faked.** `SLACK_MCP_TOKEN` isn't set (workspace setup still pending), so the Slack server was never added to the connector list — no Slack tool existed for Claude to call. Rather than fabricate success, Claude explicitly reported it couldn't complete that half, explained why, and drafted the message that would be posted once the tool exists. That's the correct behavior for a genuinely missing tool.
 
 ---
 
 ## (g) Step 11: Custom MCP server
 
-Full writeup: [`docs/custom-mcp-server.md`](docs/custom-mcp-server.md), implementation: `src/mcp/kbServer.ts` (server), `src/mcp/kbData.ts` (mock KB), `src/mcp/bridge.ts` (generic MCP-client bridge).
+Full writeup: [`docs/custom-mcp-server.md`](docs/custom-mcp-server.md). **`search_kb`**, stdio transport (single-consumer, same-machine companion process — no auth/network surface to justify HTTP). Confirmed live: `npm run kb:demo` connected the bridge, and Claude independently decided to call `search_kb` for an SSO how-to question, got back the right internal article, and used it to answer:
 
-**`search_kb`** — searches a small internal knowledge base for a known resolution before a ticket is created, specific to this support workflow (distinct from Step 9's public web search and the Step 5 data tools). **Transport: stdio** — chosen because this server has exactly one consumer (this project's own orchestrator, same machine, same lifecycle), which is the case stdio fits and HTTP's auth/network surface would be solving a problem that doesn't exist here; the inverse of Step 10, where GitHub/Slack's genuinely multi-tenant hosted servers justify HTTP + OAuth.
+```
+Discovered tools: [ 'search_kb' ]
+Claude called search_kb({"query":"SSO setup organization"})
+Tool result: [kb_sso_setup] Setting up SSO for your organization ...
+Final answer: ...Navigate to Settings > Security > SSO... Enter your identity
+provider's metadata URL... assign at least one admin as a fallback login...
+```
 
-**Discovery and calling confirmed two ways:** a real subprocess-level test (`tests/kbServer.test.ts`, passes today, no API credits needed) spawns the actual server, calls `listTools()`, and calls `search_kb` with both a matching and a non-matching query; a live demo (`npm run kb:demo`, pending credits) has Claude itself decide to call it during a real `messages.create` turn.
-
----
-
-## (h) Step 12: Full evaluation run
-
-Runner ready: `src/cli/runEval.ts` (`npm run triage:eval`) — loops all 20 eval-set messages through `runTriage`, scores urgency/topic/team against `docs/eval-set.json`'s ground truth, and writes `docs/accuracy-report.json` with per-field accuracy, exact-match rate, a breakdown of which specific mismatches occurred per field, and total token usage.
-
-**Status: pending API credits** — code-complete and typechecked, not yet run for real. Results (accuracy numbers, which categories are wrongest, commentary) will be added here once it runs.
+Also confirmed at the protocol level (no API needed) via a real subprocess test: `tests/kbServer.test.ts`.
 
 ---
 
-## Live execution status
+## Step 12: Auto-fix, triage, full evaluation
 
-This account hit two real external blockers during the assignment, both documented as they happened rather than smoothed over:
+**Auto-fix/triage boundary:** see `docs/mcp-setup.md` and `src/mcp/act.ts` — ticket creation, labeling, and GitHub issue filing/lookup run automatically; anything the model can't complete (like Slack, above) is reported honestly rather than faked, and any logic/security-relevant judgment carries `needs_human_review: true` for a person to confirm.
 
-1. **No free API tier.** The advertised no-card $5 trial credit wasn't actually granted to this account; "Evaluation access" turned out to mean console access only, confirmed by a real `credit balance too low` error after fixing an unrelated workspace-header auth issue first.
-2. **Slack MCP setup** needs the account holder to create a Slack App and toggle on MCP support in their own workspace (documented in `docs/mcp-setup.md`) — independent of the credits blocker.
+### (h) Full evaluation run
 
-**What's proven without live credits:** every piece of *this project's own code* — the tool-use loop's parallel-call assembly and error handling, the streaming event-to-result consistency, the real custom MCP server's discoverability and correctness — via tests that exercise the actual code paths (mocked only at the Anthropic-API boundary, or, for the custom MCP server, not mocked at all). What's *not* yet proven is Claude's own behavior against this schema and these tools, which is exactly what Step 12's accuracy numbers are for — that requires the real API.
+Full results: [`docs/accuracy-report.md`](docs/accuracy-report.md), data: [`docs/accuracy-report.json`](docs/accuracy-report.json).
 
-_This section will be updated with real numbers and screenshots once credits are available._
+| Field | Accuracy |
+|---|---|
+| Urgency | 80% (16/20) |
+| Topic | 90% (18/20) |
+| Team | 95% (19/20) |
+| **Exact match (all 3)** | **75% (15/20)** |
+
+**Weakest field: urgency**, and every remaining mistake is over-escalation (never under-escalation) — the model weighs customer-expressed urgency (tone, deadlines) more than the rubric's actual test (is there truly no workaround, right now). One message (#15, a CSV-export request tied to an audit deadline) alone accounts for 3 of the remaining mismatches — genuinely ambiguous even to a human. Full commentary and what I'd change next: `docs/accuracy-report.md`.
+
+### (e) Step 8: token optimization — before/after
+
+Full methodology: [`docs/token-optimization.md`](docs/token-optimization.md), results/commentary: [`docs/accuracy-report.md`](docs/accuracy-report.md#step-8-token-optimization--beforeafter).
+
+| | Before | After | Change |
+|---|---|---|---|
+| Total tokens (20-message pass) | 268,522 | 189,881 | **-29.3%** |
+| Estimated cost | $0.30406 | $0.22564 | **-25.8%** |
+| Exact-match accuracy | 55% | 75% | +20pp |
+
+Three real levers applied: prompt caching (system prompt + tools are identical across ~60 calls/pass), trimmed tool-result payloads (dropped unused fields), and a shortened, more directive system prompt (which also targeted the urgency over-escalation pattern found in the baseline run — accuracy improved as a side effect, not the token-savings mechanism itself). One planned lever — lowering `max_tokens` — was dropped after realizing it doesn't reduce billed tokens unless it truncates output; noted in the docs as a real mistake caught before it shipped, not smoothed over.
+
+**A genuine bug found and fixed via live testing, not anticipated in advance:** the first post-optimization run had 2/20 messages crash (not just score wrong) because the model sometimes answered a very low-signal message with a clarifying question in prose instead of the required JSON. Fixed by making the engine fall back to a safe `needs_human_review: true` result instead of throwing — arguably just the schema's own Step 3 "unsure" rule, enforced by code. Locked in with a new mocked test in `tests/engine.test.ts`.
+
+---
+
+## Summary of what's proven live vs. by deterministic test
+
+Every step above ran against the real Messages API at least once, with real output shown. Separately, the tool-use loop's parallel-call assembly, the streaming event-to-result consistency, and the custom MCP server's protocol-level correctness are *also* locked in by tests that don't depend on live API availability — so regressions get caught without spending API credits on every change, which is a different (and complementary) kind of proof, not a substitute for the live runs above.
