@@ -1,7 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { TOOLS } from "../tools/definitions.js";
 import { executeTool } from "../tools/executors.js";
-import { SYSTEM_PROMPT, TriageResultSchema } from "./schema.js";
+import { SYSTEM_PROMPT, TriageResultSchema, extractJson, fallbackResult } from "./schema.js";
 import type { TriageInput, TriageOutcome, TriageRunMeta } from "./types.js";
 
 const MAX_TURNS = 6;
@@ -27,7 +27,8 @@ export async function runTriage(
   const meta: TriageRunMeta = { toolCalls: [], inputTokens: 0, outputTokens: 0, turns: 0 };
   let response = await client.messages.create({
     model: opts.model,
-    max_tokens: 1024,
+    max_tokens: 700,
+    cache_control: { type: "ephemeral" }, // Step 8 lever 1: tools+system are identical every call
     system: SYSTEM_PROMPT,
     tools: TOOLS,
     messages,
@@ -71,7 +72,8 @@ export async function runTriage(
 
     response = await client.messages.create({
       model: opts.model,
-      max_tokens: 1024,
+      max_tokens: 700,
+      cache_control: { type: "ephemeral" },
       system: SYSTEM_PROMPT,
       tools: TOOLS,
       messages,
@@ -86,8 +88,11 @@ export async function runTriage(
     throw new Error(`No text block in final response (stop_reason: ${response.stop_reason})`);
   }
 
-  const parsed = JSON.parse(textBlock.text.trim());
-  const result = TriageResultSchema.parse(parsed);
-
-  return { result, meta };
+  try {
+    const parsed = JSON.parse(extractJson(textBlock.text));
+    const result = TriageResultSchema.parse(parsed);
+    return { result, meta };
+  } catch {
+    return { result: fallbackResult(textBlock.text), meta };
+  }
 }

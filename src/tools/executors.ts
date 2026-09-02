@@ -9,15 +9,20 @@ export function executeTool(name: string, input: Record<string, unknown>): unkno
     case "lookup_customer": {
       const email = String(input.email ?? "");
       const customer = findCustomerByEmail(email);
-      return customer ?? { found: false, message: `No customer account found for ${email}` };
+      // Trimmed to what triage reasoning uses (Step 8 lever 2) — email and
+      // exact signup date are redundant/unused; name/company/plan drive
+      // urgency and team judgment.
+      return customer ? { name: customer.name, company: customer.company, plan: customer.plan } : { found: false };
     }
     case "fetch_recent_orders": {
       const email = String(input.email ?? "");
-      return { orders: findOrdersByEmail(email) };
+      const orders = findOrdersByEmail(email).map((o) => ({ product: o.product, amountUsd: o.amountUsd, status: o.status, date: o.date }));
+      return { orders };
     }
     case "fetch_recent_tickets": {
       const email = String(input.email ?? "");
-      return { tickets: findTicketsByEmail(email) };
+      const tickets = findTicketsByEmail(email).map((t) => ({ subject: t.subject, priority: t.priority, team: t.team, status: t.status }));
+      return { tickets };
     }
     case "create_ticket": {
       const ticket: Ticket = createTicket({

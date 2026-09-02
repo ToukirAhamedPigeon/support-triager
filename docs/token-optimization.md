@@ -24,4 +24,4 @@ _Numbers below are filled in once API credits are available to actually run the 
 
 ## Results
 
-_Pending API credits — see `REPORT.md` "Live execution status."_
+Real before/after numbers, methodology, and commentary: [`docs/accuracy-report.md`](accuracy-report.md) — **29.3% total token reduction, 25.8% cost reduction, no accuracy cost** (three of four scored fields improved; one dipped slightly within normal run-to-run variance on already-ambiguous cases). One planned lever (lowering `max_tokens`) turned out not to be a real savings mechanism and was dropped — see that doc for why.

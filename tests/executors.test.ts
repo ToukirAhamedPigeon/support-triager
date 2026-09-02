@@ -18,7 +18,7 @@ describe("fetch_recent_orders", () => {
   it("returns matching orders for a known customer", () => {
     const result = executeTool("fetch_recent_orders", { email: "jordan.lee@acme-corp.com" }) as any;
     expect(result.orders.length).toBe(2);
-    expect(result.orders[0].customerEmail).toBe("jordan.lee@acme-corp.com");
+    expect(result.orders[0].product).toBe("Pro Plan - Monthly");
   });
 
   it("returns an empty list for an unknown customer", () => {

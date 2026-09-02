@@ -1,7 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { TOOLS } from "../tools/definitions.js";
 import { executeTool } from "../tools/executors.js";
-import { SYSTEM_PROMPT, TriageResultSchema } from "./schema.js";
+import { SYSTEM_PROMPT, TriageResultSchema, extractJson, fallbackResult } from "./schema.js";
 import type { TriageInput, TriageOutcome, TriageRunMeta } from "./types.js";
 
 const MAX_TURNS = 6;
@@ -32,7 +32,8 @@ export async function runTriageStream(
   while (meta.turns < MAX_TURNS) {
     const stream = client.messages.stream({
       model: opts.model,
-      max_tokens: 1024,
+      max_tokens: 700,
+      cache_control: { type: "ephemeral" },
       system: SYSTEM_PROMPT,
       tools: TOOLS,
       messages,
@@ -53,9 +54,13 @@ export async function runTriageStream(
       // payload — this is what Step 7 asks to be confirmed: the same result
       // must come out whether read via events or via the finished message.
       const finalText = message.content.find((b): b is Anthropic.TextBlock => b.type === "text")?.text ?? streamedText;
-      const parsed = JSON.parse(finalText.trim());
-      const result = TriageResultSchema.parse(parsed);
-      return { result, meta };
+      try {
+        const parsed = JSON.parse(extractJson(finalText));
+        const result = TriageResultSchema.parse(parsed);
+        return { result, meta };
+      } catch {
+        return { result: fallbackResult(finalText), meta };
+      }
     }
 
     messages.push({ role: "assistant", content: message.content });

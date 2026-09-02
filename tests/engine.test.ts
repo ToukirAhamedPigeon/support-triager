@@ -143,4 +143,20 @@ describe("runTriage", () => {
     expect(toolResultMessage.content[0].is_error).toBe(true);
     expect(outcome.result.needs_human_review).toBe(true);
   });
+
+  it("falls back to a safe needs-human-review result instead of throwing when the model answers in prose, not JSON", async () => {
+    const { client } = scriptedClient([
+      fakeMessage({
+        stop_reason: "end_turn",
+        usage: usage(80, 60),
+        content: [{ type: "text", text: "I need more information before I can triage this — could you clarify what isn't working?", citations: [] }],
+      }),
+    ]);
+
+    const outcome = await runTriage(client, { customerEmail: "x@example.com", message: "It's not working." }, { model: "claude-haiku-4-5" });
+
+    expect(outcome.result.needs_human_review).toBe(true);
+    expect(outcome.result.confidence).toBe(0);
+    expect(outcome.result.summary).toContain("I need more information");
+  });
 });

@@ -1,0 +1,458 @@
+{
+  "n": 20,
+  "accuracy": {
+    "urgency": 0.6,
+    "topic": 1,
+    "team": 0.85,
+    "exactMatchAllThree": 0.55
+  },
+  "mistakes": {
+    "urgency": [
+      {
+        "id": 6,
+        "predicted": "critical",
+        "actual": "high"
+      },
+      {
+        "id": 7,
+        "predicted": "high",
+        "actual": "critical"
+      },
+      {
+        "id": 8,
+        "predicted": "high",
+        "actual": "normal"
+      },
+      {
+        "id": 9,
+        "predicted": "high",
+        "actual": "normal"
+      },
+      {
+        "id": 13,
+        "predicted": "critical",
+        "actual": "high"
+      },
+      {
+        "id": 15,
+        "predicted": "high",
+        "actual": "normal"
+      },
+      {
+        "id": 16,
+        "predicted": "critical",
+        "actual": "high"
+      },
+      {
+        "id": 19,
+        "predicted": "high",
+        "actual": "normal"
+      }
+    ],
+    "topic": [],
+    "team": [
+      {
+        "id": 2,
+        "predicted": "customer_success",
+        "actual": "engineering"
+      },
+      {
+        "id": 13,
+        "predicted": "engineering",
+        "actual": "customer_success"
+      },
+      {
+        "id": 15,
+        "predicted": "customer_success",
+        "actual": "engineering"
+      }
+    ]
+  },
+  "tokens": {
+    "totalInputTokens": 259637,
+    "totalOutputTokens": 8885,
+    "totalTokens": 268522
+  },
+  "rows": [
+    {
+      "id": 1,
+      "predicted": {
+        "urgency": "high",
+        "topic": "billing",
+        "team": "billing_support"
+      },
+      "actual": {
+        "urgency": "high",
+        "topic": "billing",
+        "team": "billing_support"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11399,
+      "outputTokens": 505,
+      "turns": 3
+    },
+    {
+      "id": 2,
+      "predicted": {
+        "urgency": "low",
+        "topic": "feature_request",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "low",
+        "topic": "feature_request",
+        "team": "engineering"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": false,
+      "inputTokens": 10561,
+      "outputTokens": 295,
+      "turns": 3
+    },
+    {
+      "id": 3,
+      "predicted": {
+        "urgency": "critical",
+        "topic": "outage",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "critical",
+        "topic": "outage",
+        "team": "engineering"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11189,
+      "outputTokens": 428,
+      "turns": 3
+    },
+    {
+      "id": 4,
+      "predicted": {
+        "urgency": "normal",
+        "topic": "bug",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "bug",
+        "team": "engineering"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 10981,
+      "outputTokens": 397,
+      "turns": 3
+    },
+    {
+      "id": 5,
+      "predicted": {
+        "urgency": "normal",
+        "topic": "how_to",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "how_to",
+        "team": "customer_success"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 23304,
+      "outputTokens": 363,
+      "turns": 3
+    },
+    {
+      "id": 6,
+      "predicted": {
+        "urgency": "critical",
+        "topic": "account_access",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "high",
+        "topic": "account_access",
+        "team": "customer_success"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11423,
+      "outputTokens": 413,
+      "turns": 3
+    },
+    {
+      "id": 7,
+      "predicted": {
+        "urgency": "high",
+        "topic": "security",
+        "team": "security_team"
+      },
+      "actual": {
+        "urgency": "critical",
+        "topic": "security",
+        "team": "security_team"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 24358,
+      "outputTokens": 551,
+      "turns": 3
+    },
+    {
+      "id": 8,
+      "predicted": {
+        "urgency": "high",
+        "topic": "integration",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "integration",
+        "team": "engineering"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11466,
+      "outputTokens": 557,
+      "turns": 3
+    },
+    {
+      "id": 9,
+      "predicted": {
+        "urgency": "high",
+        "topic": "sales",
+        "team": "sales_team"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "sales",
+        "team": "sales_team"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 10545,
+      "outputTokens": 321,
+      "turns": 3
+    },
+    {
+      "id": 10,
+      "predicted": {
+        "urgency": "low",
+        "topic": "other",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "low",
+        "topic": "other",
+        "team": "customer_success"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 10552,
+      "outputTokens": 297,
+      "turns": 3
+    },
+    {
+      "id": 11,
+      "predicted": {
+        "urgency": "normal",
+        "topic": "billing",
+        "team": "billing_support"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "billing",
+        "team": "billing_support"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11633,
+      "outputTokens": 484,
+      "turns": 3
+    },
+    {
+      "id": 12,
+      "predicted": {
+        "urgency": "high",
+        "topic": "bug",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "high",
+        "topic": "bug",
+        "team": "engineering"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 10965,
+      "outputTokens": 397,
+      "turns": 3
+    },
+    {
+      "id": 13,
+      "predicted": {
+        "urgency": "critical",
+        "topic": "account_access",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "high",
+        "topic": "account_access",
+        "team": "customer_success"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": false,
+      "inputTokens": 11400,
+      "outputTokens": 517,
+      "turns": 3
+    },
+    {
+      "id": 14,
+      "predicted": {
+        "urgency": "low",
+        "topic": "how_to",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "low",
+        "topic": "how_to",
+        "team": "customer_success"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11108,
+      "outputTokens": 463,
+      "turns": 3
+    },
+    {
+      "id": 15,
+      "predicted": {
+        "urgency": "high",
+        "topic": "feature_request",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "feature_request",
+        "team": "engineering"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": false,
+      "inputTokens": 11617,
+      "outputTokens": 562,
+      "turns": 3
+    },
+    {
+      "id": 16,
+      "predicted": {
+        "urgency": "critical",
+        "topic": "security",
+        "team": "security_team"
+      },
+      "actual": {
+        "urgency": "high",
+        "topic": "security",
+        "team": "security_team"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 22253,
+      "outputTokens": 428,
+      "turns": 3
+    },
+    {
+      "id": 17,
+      "predicted": {
+        "urgency": "high",
+        "topic": "outage",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "high",
+        "topic": "outage",
+        "team": "engineering"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11150,
+      "outputTokens": 399,
+      "turns": 3
+    },
+    {
+      "id": 18,
+      "predicted": {
+        "urgency": "critical",
+        "topic": "integration",
+        "team": "engineering"
+      },
+      "actual": {
+        "urgency": "critical",
+        "topic": "integration",
+        "team": "engineering"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11522,
+      "outputTokens": 486,
+      "turns": 3
+    },
+    {
+      "id": 19,
+      "predicted": {
+        "urgency": "high",
+        "topic": "billing",
+        "team": "billing_support"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "billing",
+        "team": "billing_support"
+      },
+      "urgencyCorrect": false,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 11317,
+      "outputTokens": 545,
+      "turns": 3
+    },
+    {
+      "id": 20,
+      "predicted": {
+        "urgency": "normal",
+        "topic": "other",
+        "team": "customer_success"
+      },
+      "actual": {
+        "urgency": "normal",
+        "topic": "other",
+        "team": "customer_success"
+      },
+      "urgencyCorrect": true,
+      "topicCorrect": true,
+      "teamCorrect": true,
+      "inputTokens": 10894,
+      "outputTokens": 477,
+      "turns": 3
+    }
+  ]
+}

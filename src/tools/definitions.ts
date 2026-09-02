@@ -65,5 +65,8 @@ export const TOOLS: Anthropic.ToolUnion[] = [
     type: "web_search_20260209",
     name: "web_search",
     max_uses: 1,
+    // Required explicitly for Haiku 4.5 — it doesn't support programmatic
+    // (code-execution-invoked) tool calling, only direct model-turn calls.
+    allowed_callers: ["direct"],
   },
 ];
