@@ -5,13 +5,25 @@ import type { TriageInput, TriageResult } from "../triager/types.js";
 
 const GITHUB_REPO = process.env.MCP_DEMO_GITHUB_REPO ?? "ToukirAhamedPigeon/support-triager";
 
-const TEAM_SLACK_CHANNEL: Record<string, string> = {
-  billing_support: "#billing-support",
-  engineering: "#eng-alerts",
-  customer_success: "#customer-success",
-  security_team: "#security-incidents",
-  sales_team: "#sales",
-};
+// Production design routes each team to its own channel. For a small demo
+// workspace that doesn't have all five channels provisioned yet,
+// MCP_DEMO_SLACK_CHANNEL overrides every team to one channel that exists.
+const DEMO_CHANNEL_OVERRIDE = process.env.MCP_DEMO_SLACK_CHANNEL;
+const TEAM_SLACK_CHANNEL: Record<string, string> = DEMO_CHANNEL_OVERRIDE
+  ? {
+      billing_support: DEMO_CHANNEL_OVERRIDE,
+      engineering: DEMO_CHANNEL_OVERRIDE,
+      customer_success: DEMO_CHANNEL_OVERRIDE,
+      security_team: DEMO_CHANNEL_OVERRIDE,
+      sales_team: DEMO_CHANNEL_OVERRIDE,
+    }
+  : {
+      billing_support: "#billing-support",
+      engineering: "#eng-alerts",
+      customer_success: "#customer-success",
+      security_team: "#security-incidents",
+      sales_team: "#sales",
+    };
 
 function actSystemPrompt(): string {
   return `You are the action-taking stage of a support triager (Stage 2 — see docs/model-selection.md). You're given an already-triaged support ticket and must take the appropriate follow-up action(s) using the GitHub and Slack tools available.

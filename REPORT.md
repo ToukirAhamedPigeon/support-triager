@@ -76,13 +76,17 @@ Full writeup: [`docs/server-tool.md`](docs/server-tool.md). **Web search**, scop
 
 ## (f) Step 10: GitHub + Slack MCP connections
 
-Full details: [`docs/mcp-setup.md`](docs/mcp-setup.md). **GitHub: confirmed live end-to-end** — `npm run mcp:demo 18` (critical production-integration outage) triaged the message, then searched existing GitHub issues (none found) and created a real one: **[support-triager#1](https://github.com/ToukirAhamedPigeon/support-triager/issues/1)** — title, labels, and body (customer message + triage summary) all written by Claude through the GitHub MCP connection.
+Full details: [`docs/mcp-setup.md`](docs/mcp-setup.md). Both confirmed live end-to-end via `npm run mcp:demo 18` (the critical production-integration-outage message).
+
+**GitHub:** searched existing issues (none found on the first run) and created a real one: **[support-triager#1](https://github.com/ToukirAhamedPigeon/support-triager/issues/1)** — title, labels, and body (customer message + triage summary) all written by Claude through the GitHub MCP connection. Claude also made a real small mistake mid-run (an accidental placeholder comment) and self-corrected transparently in a follow-up comment — left in as an honest example rather than re-run for a cleaner take.
 
 ![Live GitHub issue filed through the MCP connection](screenshots/github-issue-live.png)
 
-Claude also made a real small mistake mid-run (an accidental placeholder comment) and self-corrected transparently in a follow-up comment — left in as an honest example rather than re-run for a cleaner take.
+**Slack:** two genuine real-world hiccups on the way to a live success, kept in the record rather than smoothed over. First attempt (before the workspace token existed): no Slack tool was available, and rather than fabricate success Claude explicitly said so. Second attempt (token added): Claude tried the production channel mapping's `#eng-alerts`, hit a real `channel_not_found` error since this small demo workspace doesn't have that channel, searched/listed real channels to check, found none matching, and asked for a valid one instead of guessing. Fixed with a `MCP_DEMO_SLACK_CHANNEL` override to an existing channel — the per-team mapping stays the documented production design. Re-run posted a real message, confirmed by the tool's returned `message_link` and a screenshot:
 
-**Slack: correctly deferred, not faked.** `SLACK_MCP_TOKEN` isn't set (workspace setup still pending), so the Slack server was never added to the connector list — no Slack tool existed for Claude to call. Rather than fabricate success, Claude explicitly reported it couldn't complete that half, explained why, and drafted the message that would be posted once the tool exists. That's the correct behavior for a genuinely missing tool.
+![Live Slack message posted through the MCP connection](screenshots/slack-message-live.png)
+
+Both runs (before and after the fix) are genuine, unedited model behavior — a missing tool and a wrong channel name are exactly the kind of real integration friction a live deployment hits, and the model handled both by reporting honestly rather than overclaiming.
 
 ---
 
